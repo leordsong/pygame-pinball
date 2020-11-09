@@ -10,5 +10,5 @@ class Ball(Entity):
         super().__init__(Transform(position, 1, np.array([0, 0]), np.array([0, 0])), Circle(r), material, name)
 
     def launch(self):
-        self.transform.velocity = self.transform.velocity + np.array([0, -200])
+        self.transform.velocity = self.transform.velocity + np.array([0, -400])
         self.transform.force = self.transform.force + np.array([0, 40])

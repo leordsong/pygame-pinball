@@ -29,14 +29,14 @@ DISPLAYSURF = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption(WINDOW_TITLE)
 
 # Create Sprites
-wall_material = Material(THECOLORS['black'])
+wall_material = Material(THECOLORS['black'], restitution=0.8)
 walls = [
     Entity(Transform(np.array([0, 0]), 10), Rectangle(WINDOW_WIDTH - 40, 5), wall_material, "UpperWall"),
     Entity(Transform(np.array([0, 0]), 10), Rectangle(5, WINDOW_HEIGHT), wall_material, "LeftWall"),
     Entity(Transform(np.array([WINDOW_WIDTH - 40, 80]), 10), Rectangle(5, WINDOW_HEIGHT), wall_material, "MidWall"),
     Entity(Transform(np.array([WINDOW_WIDTH - 5, 40]), 10), Rectangle(5, WINDOW_HEIGHT), wall_material, "RightWall"),
-    Entity(Transform(np.array([WINDOW_WIDTH - 50, 0]), 10),
-           ConvexPolygon(np.array([[WINDOW_WIDTH - 50, 0], [WINDOW_WIDTH, 0], [WINDOW_WIDTH, 50]])),
+    Entity(Transform(np.array([WINDOW_WIDTH - 50, 0]), 100),
+           ConvexPolygon(np.array([[WINDOW_WIDTH - 100, 0], [WINDOW_WIDTH, 0], [WINDOW_WIDTH, 50]])),
            wall_material, "TopRight"),
     Entity(Transform(np.array([5, WINDOW_HEIGHT - 69]), 10),
            ConvexPolygon(np.array([[5, WINDOW_HEIGHT - 69], [5, WINDOW_HEIGHT - 97],

@@ -66,7 +66,7 @@ class Circle(Shape):
 
     def _edge_cross_circle(self, p1: np.ndarray, p2: np.ndarray):
         d: np.ndarray = p2 - p1
-        f: np.ndarray = self.position - p1
+        f: np.ndarray = p1 - self.position
 
         a = d.dot(d)
         b = 2 * f.dot(d)

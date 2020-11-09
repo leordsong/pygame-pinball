@@ -1,4 +1,4 @@
-import numpy as np
+from engine.shapes.ConvexPolygon import ConvexPolygon
 
 from engine import Entity
 from game.Ball import Ball
@@ -16,13 +16,9 @@ class Contact:
         if self.normal is None:
             return
         print(self.normal)
-        vc = (-1) * self.ball.transform.velocity * self.normal
-        vc_prime = self.restitution * vc
-        delta_v = vc - vc_prime
-        inverse_mass = 1 / self.ball.transform.mass + 1 / self.static.transform.mass
-        impulse = delta_v / inverse_mass
-        gm = self.normal * impulse
-        self.ball.transform.velocity = self.ball.transform.velocity + gm / self.ball.transform.mass
+        delta_v = (-1 - self.restitution) * self.ball.transform.velocity.dot(self.normal)
+        gm = delta_v * self.normal
+        self.ball.transform.velocity = self.ball.transform.velocity + gm
 
 
 def get_contacts(ball: Ball, static_bodies: [Entity]):
