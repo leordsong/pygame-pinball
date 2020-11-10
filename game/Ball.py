@@ -2,6 +2,7 @@ import numpy as np
 
 from engine import Entity, Transform, Material
 from engine.shapes import Circle
+from game.Flipper import Flipper
 
 
 class Ball(Entity):
@@ -11,4 +12,18 @@ class Ball(Entity):
 
     def launch(self):
         self.transform.velocity = self.transform.velocity + np.array([0, -400])
-        self.transform.force = self.transform.force + np.array([0, 40])
+        self.transform.force = np.array([0, 40])
+
+    def collide(self, entity):
+        if isinstance(entity, Flipper):
+            return self.shape.collide(entity.shape) or self.shape.collide(entity.body_shape) or self.shape.collide(
+                entity.head_shape)
+        return super(Ball, self).collide(entity)
+
+    def get_contact_normal(self, entity):
+        if isinstance(entity, Flipper):
+            if self.shape.collide(entity.body_shape):
+                return self.shape.get_normal(entity.body_shape)
+            elif self.shape.collide(entity.head_shape):
+                return self.shape.get_normal(entity.body_shape)
+        return super(Ball, self).get_contact_normal(entity)

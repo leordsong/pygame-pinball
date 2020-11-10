@@ -95,7 +95,11 @@ class Circle(Shape):
             for i in range(edges):
                 if self._edge_cross_circle(points_prime[i], points_prime[i + 1]):
                     edge = points_prime[i] - points_prime[i + 1]
-                    return np.array([-edge[1], edge[0]]) / np.linalg.norm(edge)
+                    normal = np.array([-edge[1], edge[0]]) / np.linalg.norm(edge)
+                    pc = self.position - points_prime[i]
+                    if pc.dot(normal) < 0:
+                         normal = -normal
+                    return normal
             return None
         raise Exception("Unknown shape: " + str(type(shape)))
 

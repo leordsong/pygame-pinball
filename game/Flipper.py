@@ -38,7 +38,7 @@ class Flipper(Entity):
         result.append([center[0] + sin_angle * center_r, center[1] - cos_angle * center_r])
         result.append([head[0] + sin_angle * head_r, head[1] - cos_angle * head_r])
         result.append([head[0] - sin_angle * head_r, head[1] + cos_angle * head_r])
-        return result
+        return np.array(result)
 
     @staticmethod
     def _rotate(origin, point, angle):

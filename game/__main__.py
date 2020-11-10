@@ -5,16 +5,13 @@ from pygame.locals import *
 from pygame.color import THECOLORS
 import math
 
-from engine import Entity, Transform
-from engine.Material import Material
+from engine import Entity, Transform, Material, get_contacts
 from engine.shapes import Rectangle, ConvexPolygon
 from game.Ball import Ball
 from game.Bumper import Bumper
 from game.Flipper import Flipper
 
 # Initialize program
-from game.PhyscisEngine import get_contacts
-
 pygame.init()
 
 # Assign FPS a value
@@ -29,11 +26,11 @@ DISPLAYSURF = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption(WINDOW_TITLE)
 
 # Create Sprites
-wall_material = Material(THECOLORS['black'], restitution=0.8)
+wall_material = Material(THECOLORS['black'], restitution=1)
 walls = [
     Entity(Transform(np.array([0, 0]), 10), Rectangle(WINDOW_WIDTH - 40, 5), wall_material, "UpperWall"),
     Entity(Transform(np.array([0, 0]), 10), Rectangle(5, WINDOW_HEIGHT), wall_material, "LeftWall"),
-    Entity(Transform(np.array([WINDOW_WIDTH - 40, 80]), 10), Rectangle(5, WINDOW_HEIGHT), wall_material, "MidWall"),
+    Entity(Transform(np.array([WINDOW_WIDTH - 40, 100]), 10), Rectangle(5, WINDOW_HEIGHT - 100), wall_material, "MidWall"),
     Entity(Transform(np.array([WINDOW_WIDTH - 5, 40]), 10), Rectangle(5, WINDOW_HEIGHT), wall_material, "RightWall"),
     Entity(Transform(np.array([WINDOW_WIDTH - 50, 0]), 100),
            ConvexPolygon(np.array([[WINDOW_WIDTH - 100, 0], [WINDOW_WIDTH, 0], [WINDOW_WIDTH, 50]])),
@@ -48,11 +45,11 @@ walls = [
            wall_material, "RightArm"),
 ]
 
-bumper_material = Material(THECOLORS['red'], restitution=0.9)
+bumper_material = Material(THECOLORS['red'], restitution=1.2)
 bumpers = [
     Bumper(np.array([30, 60]), material=bumper_material, name="Bumper1"),
     Bumper(np.array([105, 145]), material=bumper_material, name="Bumper2"),
-    Bumper(np.array([165, 130]), material=bumper_material, name="Bumper3"),
+    Bumper(np.array([165, 130]), r=20, material=bumper_material, name="Bumper3"),
 ]
 
 flipper_material = Material(THECOLORS['red'], restitution=0.6)
@@ -66,13 +63,16 @@ plunger = Entity(Transform(np.array([WINDOW_WIDTH - 25, WINDOW_HEIGHT - 40]), 10
                  "Plunger")
 
 static_group = walls + bumpers + [left_flipper, right_flipper, plunger]
-ball = Ball(np.array([280, 450]), 10, Material(THECOLORS['green']))
+ball = Ball(np.array([280, 450]), 14, Material(THECOLORS['green']))
 
 # Create fonts
 text_font = pygame.font.Font('freesansbold.ttf', 13)
+text_font2 = pygame.font.Font('freesansbold.ttf', 20)
 
 # Beginning Game Loop
 last_time = None
+scores = 0
+game_over = False
 while True:
 
     for event in pygame.event.get():
@@ -80,32 +80,52 @@ while True:
             pygame.quit()
             sys.exit()
         if event.type == KEYDOWN:
-            if event.key == K_z:
-                left_flipper.rotate(True)
-            if event.key == K_m:
-                right_flipper.rotate(True)
-            if event.key == K_SPACE:
-                ball.launch()
+            if event.key == K_F5:
+                game_over = False
+                points = 0
+                ball.init_position(np.array([280, 450]))
 
-        if event.type == KEYUP:
-            if event.key == K_z:
-                left_flipper.rotate(False)
-            if event.key == K_m:
-                right_flipper.rotate(False)
+        if not game_over:
+            if event.type == KEYDOWN:
+                if event.key == K_z:
+                    left_flipper.rotate(True)
+                if event.key == K_m:
+                    right_flipper.rotate(True)
+                if event.key == K_SPACE:
+                    ball.launch()
 
-    t = pygame.time.get_ticks()
-    delta_time = 0 if last_time is None else (t - last_time) / 1000
-    last_time = t
+            if event.type == KEYUP:
+                if event.key == K_z:
+                    left_flipper.rotate(False)
+                if event.key == K_m:
+                    right_flipper.rotate(False)
 
-    # first update
-    for w in static_group:
-        w.update(delta_time)
-    ball.update(delta_time)
+    if not game_over:
+        t = pygame.time.get_ticks()
+        delta_time = 0 if last_time is None else (t - last_time) / 1000
+        last_time = t
 
-    # Check contacts
-    contacts = get_contacts(ball, static_group)
-    for contact in contacts:
-        contact.resolve()
+        # first update
+        for w in static_group:
+            w.update(delta_time)
+        ball.update(delta_time)
+
+        # Check contacts
+        contacts = get_contacts(ball, static_group)
+        if len(contacts) > 0:
+            ball.revert()
+        for contact in contacts:
+            contact.resolve(delta_time)
+        if len(contacts) > 0:
+            ball.update(delta_time / 2)
+
+        # Add points
+        for contact in contacts:
+            if isinstance(contact.body_b, Bumper):
+                scores += contact.body_b.points
+
+    if ball.transform.position[1] >= WINDOW_HEIGHT:
+        game_over = True
 
     # Render
     DISPLAYSURF.fill(THECOLORS['cadetblue1'])
@@ -113,10 +133,14 @@ while True:
         w.draw(DISPLAYSURF)
     ball.draw(DISPLAYSURF)
     # Display Scores
-    scores = 0
     scoreText = str(scores)
     score = text_font.render(scoreText, True, THECOLORS['black'])
     DISPLAYSURF.blit(score, (15, 10))
+    if game_over:
+        game_over_text = text_font2.render("Game Over", True, THECOLORS['black'])
+        DISPLAYSURF.blit(game_over_text, (WINDOW_WIDTH / 2 - 60, WINDOW_HEIGHT / 2))
+
+    # imgdata = pygame.surfarray.array3d(DISPLAYSURF)
 
     pygame.display.update()
     FramePerSec.tick(FPS)
