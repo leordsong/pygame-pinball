@@ -9,10 +9,12 @@ class Ball(Entity):
 
     def __init__(self, position: np.ndarray, r: float, material: Material, name="TheBall"):
         super().__init__(Transform(position, 1, np.array([0, 0]), np.array([0, 0])), Circle(r), material, name)
+        self.original_position = position
 
     def launch(self):
-        self.transform.velocity = self.transform.velocity + np.array([0, -400])
-        self.transform.force = np.array([0, 40])
+        if np.array_equal(self.transform.position,self.original_position):
+            self.transform.velocity = self.transform.velocity + np.array([0, -400])
+            self.transform.force = np.array([0, 40])
 
     def collide(self, entity):
         if isinstance(entity, Flipper):
@@ -27,3 +29,6 @@ class Ball(Entity):
             elif self.shape.collide(entity.head_shape):
                 return self.shape.get_normal(entity.body_shape)
         return super(Ball, self).get_contact_normal(entity)
+
+    def initialize(self):
+        self.init_position(self.original_position)

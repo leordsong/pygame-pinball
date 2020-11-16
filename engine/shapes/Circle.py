@@ -5,7 +5,6 @@ import pygame
 
 from engine import Material
 from engine.shapes.Shape import Shape
-from engine.shapes.Rectangle import Rectangle
 from engine.shapes.ConvexPolygon import ConvexPolygon
 
 
@@ -19,15 +18,12 @@ class Circle(Shape):
         if material.image is not None:
             ctx.blit(material.image, self.position - self.r)
         else:
-            pygame.draw.circle(ctx, material.color, self.position, self.r)
+            pygame.draw.circle(ctx, material.color, [self.position[0], self.position[1]], self.r)
 
     def collide(self, shape: Shape):
         if isinstance(shape, Circle):
             dist = np.linalg.norm(shape.position - self.position)
             return dist <= (self.r + shape.r)
-        if isinstance(shape, Rectangle):
-            points = shape.get_points()
-            return self._point_in_convex_polygon(points) or self._edges_cross_circle(points)
         if isinstance(shape, ConvexPolygon):
             return self._point_in_convex_polygon(shape.points) or self._edges_cross_circle(shape.points)
         raise Exception("Unknown shape: " + str(type(shape)))
@@ -35,7 +31,7 @@ class Circle(Shape):
     def _point_in_convex_polygon(self, points: np.ndarray):
         edges = points.shape[0]
         a = points[0]
-        for i in range(edges-2):
+        for i in range(edges - 2):
             b = points[i + 1]
             c = points[i + 2]
             if self._point_in_triangle(a, b, c):
@@ -79,31 +75,21 @@ class Circle(Shape):
         t2 = (-b + discriminant) / (2 * a)
         return 0 <= t1 <= 1 or 0 <= t2 <= 1
 
-    def get_normal(self, shape):
+    def get_normal(self, shape: Shape):
         if isinstance(shape, Circle):
             vector = self.position - shape.position
             dist = np.linalg.norm(shape.position - self.position)
             return vector / dist
-        points = None
-        if isinstance(shape, Rectangle):
-            points = shape.get_points()
         if isinstance(shape, ConvexPolygon):
-            points = shape.points
-        if points is not None:
-            edges = points.shape[0]
-            points_prime = np.append(points, points[0].reshape((1, 2)), axis=0)
+            edges = shape.points.shape[0]
+            points_prime = np.append(shape.points, shape.points[0].reshape((1, 2)), axis=0)
             for i in range(edges):
                 if self._edge_cross_circle(points_prime[i], points_prime[i + 1]):
                     edge = points_prime[i] - points_prime[i + 1]
                     normal = np.array([-edge[1], edge[0]]) / np.linalg.norm(edge)
                     pc = self.position - points_prime[i]
                     if pc.dot(normal) < 0:
-                         normal = -normal
+                        normal = -normal
                     return normal
             return None
         raise Exception("Unknown shape: " + str(type(shape)))
-
-
-
-
-

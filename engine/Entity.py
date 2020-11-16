@@ -39,5 +39,9 @@ class Entity(pygame.sprite.Sprite):
         self.transform.velocity = None if self.transform.velocity is None else np.array([0, 0])
         self.transform._prev_velocity = self.transform.velocity
         self.transform.force = np.array([0, 0])
+        self.shape.update_position(position)
+
+    def initialize(self):
+        pass
 
 

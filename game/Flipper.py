@@ -28,6 +28,9 @@ class Flipper(Entity):
             self.head_shape.update_position(self.original_head)
             self.body_shape.points = self.original_points
 
+    def initialize(self):
+        self.rotate(False)
+
     @staticmethod
     def _calculate_points(center, center_r, head, head_r):
         result = []
