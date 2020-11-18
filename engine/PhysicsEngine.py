@@ -1,4 +1,7 @@
-from engine import Entity
+from enum import Enum
+
+from engine.Entity import Entity
+from engine.shapes import Shape
 
 
 class Contact:
@@ -12,9 +15,16 @@ class Contact:
         normal = self.body_a.get_contact_normal(self.body_b)
         if normal is None:
             return
-        delta_v = (-1 - self.restitution) * self.body_a.transform.velocity.dot(normal)
+        delta_v = (-1 - self.restitution) * self.body_a.velocity.dot(normal)
         gm = delta_v * normal
-        self.body_a.transform.velocity = self.body_a.transform.velocity + gm
+        self.body_a.velocity = self.body_a.velocity + gm
+
+
+class ContactType(Enum):
+    CircleCircle = 0
+    CircleRect = 1
+    CirclePoly = 2
+    Unknown = -1
 
 
 def get_contacts(ball: Entity, static_bodies: [Entity]):
@@ -23,3 +33,11 @@ def get_contacts(ball: Entity, static_bodies: [Entity]):
         if ball.collide(static):
             result.append(Contact(ball, static))
     return result
+
+
+def is_colliding(shape_a: Shape, shape_b: Shape):
+    return False
+
+
+def get_normal(shape_a: Shape, shape_b: Shape):
+    return False

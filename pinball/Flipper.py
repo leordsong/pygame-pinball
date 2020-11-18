@@ -9,26 +9,26 @@ from engine.Entity import Entity
 class Flipper(Entity):
 
     def __init__(self, center: np.ndarray, head: np.ndarray, angle: float, material: Material, name="Flipper",
-                 center_r=12, head_r=7):
-        super().__init__(Transform(center, 10), Circle(center_r), material, name=name)
+                 center_r: float = 12.0, head_r: float = 7.0):
+        super().__init__(Circle(center_r, Transform(center)), material, 100, name=name)
         self.angle = angle
         self.original_head = head
         self.rotated_head = self._rotate(center, head, angle)
 
-        self.head_shape = Circle(head_r, self.original_head)
+        self.head_shape = Circle(head_r, Transform(self.original_head))
         self.original_points = self._calculate_points(center, center_r, self.original_head, head_r)
         self.rotated_points = self._calculate_points(center, center_r, self.rotated_head, head_r)
-        self.body_shape = ConvexPolygon(self.original_points)
+        self.body_shape = ConvexPolygon(self.original_points, Transform(center))
 
     def rotate(self, active):
         if active:
-            self.head_shape.update_position(self.rotated_head)
+            self.head_shape.transform.position = self.rotated_head
             self.body_shape.points = self.rotated_points
         else:
-            self.head_shape.update_position(self.original_head)
+            self.head_shape.transform.position = self.original_head
             self.body_shape.points = self.original_points
 
-    def initialize(self):
+    def reset(self):
         self.rotate(False)
 
     @staticmethod
@@ -57,7 +57,7 @@ class Flipper(Entity):
         qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
         return [qx, qy]
 
-    def draw(self, ctx):
-        self.head_shape.draw(ctx, self.material)
-        self.body_shape.draw(ctx, self.material)
-        self.shape.draw(ctx, self.material)
+    def draw(self, screen):
+        self.head_shape.render(screen, self.material)
+        self.body_shape.render(screen, self.material)
+        self.shape.render(screen, self.material)

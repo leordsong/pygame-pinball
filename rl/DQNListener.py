@@ -1,6 +1,6 @@
 from typing import List
 
-from game.Listener import Listener, Events
+from engine.InputEngine import Listener, Events
 from rl.DQNAgent import DQNAgent
 
 

@@ -1,6 +1,12 @@
+from typing import Tuple
+
+from utils import is_color_tuple
+
+
 class Material:
 
-    def __init__(self, color, image=None, restitution=0.5):
-        self.color = color
+    def __init__(self, color: Tuple[int, int, int, int], image=None, restitution: float = 0.9):
+        self.color = is_color_tuple(color)
         self.image = image
+        assert type(restitution) is float
         self.restitution = restitution
