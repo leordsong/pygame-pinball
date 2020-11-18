@@ -1,6 +1,6 @@
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dense, Convolution2D, Flatten
 import random
 import numpy as np
 import collections
@@ -16,19 +16,19 @@ class DQNAgent:
         self.agent_predict = 0
         self.learning_rate = 0.0005
         self.epsilon = 1
+        self.episodes = 100
         self.actual = []
-        self.first_layer = 50
-        self.second_layer = 300
-        self.third_layer = 50
         self.memory = collections.deque(maxlen=2500)
         self.model = self.network()
 
     def network(self):
         model = Sequential()
-        model.add(Dense(self.first_layer, activation='relu', input_dim=(300, 400)))
-        model.add(Dense(self.second_layer, activation='relu'))
-        model.add(Dense(self.third_layer, activation='relu'))
-        model.add(Dense(100, output_dim=3, activation='softmax'))
+        model.add(Convolution2D(16, 8, 8, activation='relu', input_dim=(300, 400)))
+        model.add(Convolution2D(16, 4, 4, activation='relu', input_dim=(300, 400)))
+        model.add(Flatten())
+        model.add(Dense(100, activation='relu'))
+        model.add(Dense(50, activation='relu'))
+        model.add(Dense(50, output_dim=3, activation='softmax'))
         opt = Adam(self.learning_rate)
         model.compile(loss='mse', optimizer=opt)
         return model
@@ -39,6 +39,9 @@ class DQNAgent:
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
+
+    def predict(self, state):
+        return self.model.predict(state)
 
     def replay_new(self, memory, batch_size):
         if len(memory) > batch_size:

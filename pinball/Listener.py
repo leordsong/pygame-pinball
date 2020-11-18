@@ -19,7 +19,7 @@ class Events(Enum):
 
 class KeyBoardListener(Listener):
 
-    def yield_events(self) -> List[str]:
+    def yield_events(self, game) -> List[str]:
         events = []
         for event in pygame.event.get():
             if event.type == QUIT:

@@ -71,8 +71,7 @@ class Game:
             t = pygame.time.get_ticks()
             delta_time = 0.0 if self.last_time is 0 else (t - self.last_time) / 1000
             self.last_time = t
-
-            self.handle_actions(self.listener.yield_events())
+            self.handle_actions(self.listener.yield_events(self))
             self.step(delta_time)
             self.render()
             if self.needs_update_frame():

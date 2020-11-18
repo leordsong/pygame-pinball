@@ -113,7 +113,7 @@ class PinballGame(Game):
             self.ball.update(delta_time / 2)
 
         if self.ball.transform.position[1] >= self.height:
-            self.last_game_over = True
+            self.game_over = True
         if not self.launched and self.ball.transform.position[0] <= (self.width - 40 - self.ball.shape.r):
             self.launched = True
             self.valve.trigger()
@@ -134,7 +134,7 @@ class PinballGame(Game):
 
         score_text = self.text_font.render(str(self.score), True, THECOLORS['black'])
         self.screen.blit(score_text, (15, 10))
-        if self.last_game_over:
+        if self.game_over:
             game_over_text = self.text_font2.render("Game Over", True, THECOLORS['black'])
             self.screen.blit(game_over_text, (self.width / 2 - 60, self.height / 2))
 
