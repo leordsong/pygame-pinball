@@ -17,18 +17,14 @@ class Ball(Entity):
             self.velocity = self.velocity + np.array([0, -400])
             self.force = np.array([0, 40])
 
-    def collide(self, entity):
+    def collide(self, entity) -> bool:
         if isinstance(entity, Flipper):
-            return self.shape.collide(entity.shape) or self.shape.collide(entity.body_shape) or self.shape.collide(
-                entity.head_shape)
+            return entity.collide_ball(self)
         return super(Ball, self).collide(entity)
 
     def get_contact_normal(self, entity: Entity):
         if isinstance(entity, Flipper):
-            if self.shape.collide(entity.body_shape):
-                return self.shape.get_normal(entity.body_shape)
-            elif self.shape.collide(entity.head_shape):
-                return self.shape.get_normal(entity.body_shape)
+            return entity.get_contact_normal_ball(self)
         return super(Ball, self).get_contact_normal(entity)
 
     def reset(self):
