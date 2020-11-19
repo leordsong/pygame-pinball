@@ -1,23 +1,20 @@
-from typing import List, Tuple
+from typing import Tuple
 
 import numpy as np
 import pygame
 
-from engine.InputEngine import Listener
 from utils import is_color_tuple
 
 
 class Game:
 
-    def __init__(self, name: str, width: int, height: int, listener: Listener, background: Tuple[int, int, int, int]):
+    def __init__(self, name: str, width: int, height: int, background: Tuple[int, int, int, int]):
         assert type(name) is str
         self.name = name
         assert type(width) is int
         self.width = width
         assert type(height) is int
         self.height = height
-        assert isinstance(listener, Listener)
-        self.listener = listener
         self.background = is_color_tuple(background)
 
         self.score = 0.0
@@ -34,13 +31,19 @@ class Game:
 
     def get_grey_screen(self):
         rgb = pygame.surfarray.array3d(self.screen).astype(np.float)
-        return np.dot(rgb[..., :3], [0.299, 0.587, 0.114])
+        return rgb / 255
 
     def init(self):
         raise NotImplementedError("This method needs to be implemented")
 
-    def handle_actions(self, actions: List[str]):
+    def handle_actions(self):
         raise NotImplementedError("This method needs to be implemented")
+
+    def update(self):
+        t = pygame.time.get_ticks()
+        delta_time = 0.0 if self.last_time is 0 else (t - self.last_time) / 1000
+        self.last_time = t
+        self.step(delta_time)
 
     def step(self, delta_time):
         raise NotImplementedError("This method needs to be implemented")
@@ -68,11 +71,8 @@ class Game:
         self._setup()
         self.init()
         while True:
-            t = pygame.time.get_ticks()
-            delta_time = 0.0 if self.last_time is 0 else (t - self.last_time) / 1000
-            self.last_time = t
-            self.handle_actions(self.listener.yield_events(self))
-            self.step(delta_time)
+            self.handle_actions()
+            self.update()
             self.render()
             if self.needs_update_frame():
                 self.update_frame()

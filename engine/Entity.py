@@ -9,6 +9,8 @@ from utils import is_2d_array
 
 class Entity(pygame.sprite.Sprite):
 
+    max_speed = 700
+
     def __init__(self, shape: Shape, material: Material, mass: int, velocity: np.ndarray = None,
                  force: np.ndarray = None, name="None"):
         super().__init__()
@@ -36,6 +38,9 @@ class Entity(pygame.sprite.Sprite):
         position = self.transform.position + self.velocity * delta_time + acc * delta_time ** 2 / 2
         self._prev_velocity = self.velocity
         self.velocity = self.velocity + acc * delta_time
+        speed = np.linalg.norm(self.velocity)
+        if speed > self.max_speed:
+            self.velocity = self.velocity * (self.max_speed / speed)
         self.transform.update(position)
         self.shape.update()
 

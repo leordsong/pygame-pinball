@@ -3,13 +3,13 @@ from typing import List
 
 import numpy as np
 import pygame
+from pygame.locals import *
 from pygame.color import THECOLORS
 import math
 
 from engine import Game, Material, Transform
 from engine import Entity, get_contacts
 from engine.shapes import Rectangle, ConvexPolygon
-from pinball.Listener import KeyBoardListener, Events
 from pinball.Valve import Valve
 from pinball.Ball import Ball
 from pinball.Bumper import Bumper
@@ -31,7 +31,7 @@ class PinballGame(Game):
     bumpers: List[Bumper] = []
 
     def __init__(self):
-        super().__init__('Pinball', 300, 500, KeyBoardListener(), THECOLORS['white'])
+        super().__init__('Pinball', 300, 500, THECOLORS['white'])
 
     def init(self):
         self.text_font = pygame.font.Font('freesansbold.ttf', 13)
@@ -67,9 +67,9 @@ class PinballGame(Game):
 
         bumper_material = Material(THECOLORS['red'], restitution=1.2)
         self.bumpers = [
-            Bumper(np.array([30, 60]), material=bumper_material, name="Bumper1"),
-            Bumper(np.array([105, 145]), material=bumper_material, name="Bumper2"),
-            Bumper(np.array([165, 130]), r=20.0, material=bumper_material, name="Bumper3"),
+            Bumper(np.array([50, 60]), material=bumper_material, name="Bumper1"),
+            Bumper(np.array([105, 345]), material=bumper_material, name="Bumper2"),
+            Bumper(np.array([165, 200]), r=20.0, material=bumper_material, name="Bumper3"),
         ]
 
         flipper_material = Material(THECOLORS['red'])
@@ -79,23 +79,28 @@ class PinballGame(Game):
                                      np.array([self.width - 140, self.height - 25]), math.pi / 4,
                                      flipper_material, 'RightFlipper', left=False)
 
-    def handle_actions(self, actions: List[str]):
-        for event in actions:
-            if event == Events.QUIT.value:
+    def handle_actions(self):
+        for event in pygame.event.get():
+            if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
-            if event == Events.RESTART.value:
-                self.reset()
-            if event == Events.PRESS_LEFT.value:
-                self.left_flipper.rotate(True)
-            if event == Events.RELEASE_LEFT.value:
-                self.left_flipper.rotate(False)
-            if event == Events.PRESS_RIGHT.value:
-                self.right_flipper.rotate(True)
-            if event == Events.RELEASE_RIGHT.value:
-                self.right_flipper.rotate(False)
-            if event == Events.LAUNCH.value:
-                self.ball.launch()
+            if event.type == KEYDOWN:
+                if event.key == K_F5:
+                    self.reset()
+
+            if event.type == KEYDOWN:
+                if event.key == K_z:
+                    self.left_flipper.rotate(True)
+                if event.key == K_m:
+                    self.right_flipper.rotate(True)
+                if event.key == K_SPACE:
+                    self.ball.launch()
+
+            if event.type == KEYUP:
+                if event.key == K_z:
+                    self.left_flipper.rotate(False)
+                if event.key == K_m:
+                    self.right_flipper.rotate(False)
 
     def step(self, delta_time):
         if self.game_over:
@@ -132,7 +137,7 @@ class PinballGame(Game):
         self.left_flipper.draw(self.screen)
         self.right_flipper.draw(self.screen)
 
-        score_text = self.text_font.render(str(self.score), True, THECOLORS['black'])
+        score_text = self.text_font.render(str(int(self.score)), True, THECOLORS['black'])
         self.screen.blit(score_text, (15, 10))
         if self.game_over:
             game_over_text = self.text_font2.render("Game Over", True, THECOLORS['black'])
@@ -154,10 +159,6 @@ class PinballGame(Game):
         self.left_flipper.reset()
         self.right_flipper.reset()
         self.valve.reset()
-        for w in self.walls:
-            w.reset()
-        for w in self.bumpers:
-            w.reset()
 
 
 if __name__ == '__main__':
