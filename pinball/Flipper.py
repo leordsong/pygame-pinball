@@ -76,7 +76,6 @@ class Flipper(Entity):
         points = self._calculate_points(self.center, self.tail.r, head_position, self.head.r)
         self.body.points = points
 
-
     @staticmethod
     def _calculate_points(center, center_r, head, head_r):
         result = []

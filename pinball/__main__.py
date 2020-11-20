@@ -9,7 +9,7 @@ import math
 
 from engine import Game, Material, Transform
 from engine import Entity, get_contacts
-from engine.shapes import Rectangle, ConvexPolygon
+from engine.shapes import Rectangle, ConvexPolygon, Circle
 from pinball.Valve import Valve
 from pinball.Ball import Ball
 from pinball.Bumper import Bumper
@@ -66,10 +66,13 @@ class PinballGame(Game):
                            "MiddleWall")
 
         bumper_material = Material(THECOLORS['red'], restitution=1.2)
+        p = np.array([60, 80])
+        w = np.array([15, 0])
+        h = np.array([0, 30])
         self.bumpers = [
-            Bumper(np.array([50, 60]), material=bumper_material, name="Bumper1"),
-            Bumper(np.array([105, 345]), material=bumper_material, name="Bumper2"),
-            Bumper(np.array([165, 200]), r=20.0, material=bumper_material, name="Bumper3"),
+            Bumper(ConvexPolygon(np.array([p-w, p+h, p+w, p-h]), Transform(p)), material=bumper_material, name="Bumper1"),
+            Bumper(Circle(10.0, Transform(np.array(np.array([105, 345])))), material=bumper_material, name="Bumper2"),
+            Bumper(Circle(20.0, Transform(np.array(np.array([165, 200])))), material=bumper_material, name="Bumper3"),
         ]
 
         flipper_material = Material(THECOLORS['red'])
