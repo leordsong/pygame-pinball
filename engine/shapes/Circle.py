@@ -113,7 +113,7 @@ class Circle(Shape):
                     dist = np.linalg.norm(vector)
                     points.append(point)
                     distances.append(dist)
-            index: int = np.argmin(distances)
+            index: int = int(np.argmin(distances))
             point = points[index]
             vector = self.transform.position - point
             dist = np.linalg.norm(vector)

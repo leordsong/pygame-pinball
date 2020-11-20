@@ -119,7 +119,6 @@ class PinballGame(Game):
         if len(contacts) > 0:
             self.ball.revert()
         for contact in contacts:
-            print(contact.body_b.name)
             contact.resolve(delta_time)
 
         if self.ball.transform.position[1] >= self.height:

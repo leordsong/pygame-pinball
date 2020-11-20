@@ -10,9 +10,9 @@ class Contact:
 
     def resolve(self, delta_t):
         t = 0
-        for i in range(1, 1001):
-            t = delta_t * i / 1000
-            self.body_a.update(t)
+        for i in range(1, 101):
+            t = i
+            self.body_a.update(delta_t / 100)
             if self.body_a.collide(self.body_b):
                 break
 
@@ -23,7 +23,7 @@ class Contact:
         delta_v = (-1 - self.restitution) * self.body_a.velocity.dot(normal)
         gm = delta_v * normal
         self.body_a.velocity = self.body_a.velocity + gm
-        self.body_a.update(delta_t - t)
+        self.body_a.update(delta_t - delta_t * t / 100)
 
 
 def get_contacts(ball: Entity, static_bodies: [Entity]):
