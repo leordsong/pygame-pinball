@@ -4,7 +4,7 @@ import pygame
 from engine.Transform import Transform
 from engine.Material import Material
 from engine.shapes.ConvexPolygon import ConvexPolygon
-from utils import is_2d_array
+from engine.utils import is_2d_array
 
 
 class Rectangle(ConvexPolygon):

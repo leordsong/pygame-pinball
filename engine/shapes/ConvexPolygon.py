@@ -6,7 +6,7 @@ from pygame import gfxdraw
 from engine import Material
 from engine.Transform import Transform
 from engine.shapes.Shape import Shape
-from utils import is_polygon_array, is_2d_array
+from engine.utils import is_polygon_array, is_2d_array
 
 
 class ConvexPolygon(Shape):

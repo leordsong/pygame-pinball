@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-from utils import is_2d_array
+from engine.utils import is_2d_array
 
 
 class Transform:

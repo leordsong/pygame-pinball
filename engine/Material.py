@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from utils import is_color_tuple
+from engine.utils import is_color_tuple
 
 
 class Material:

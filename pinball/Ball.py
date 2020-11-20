@@ -3,7 +3,7 @@ import numpy as np
 from engine import Entity, Transform, Material
 from engine.shapes import Circle
 from pinball.Flipper import Flipper
-from utils import is_2d_array
+from engine.utils import is_2d_array
 
 
 class Ball(Entity):

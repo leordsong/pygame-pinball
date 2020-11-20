@@ -3,7 +3,7 @@ from typing import Tuple
 import numpy as np
 import pygame
 
-from utils import is_color_tuple
+from engine.utils import is_color_tuple
 
 
 class Game:

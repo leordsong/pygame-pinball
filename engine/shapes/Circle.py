@@ -1,5 +1,3 @@
-import math
-
 import numpy as np
 import pygame
 
@@ -7,7 +5,7 @@ from engine import Material, Transform
 from engine.shapes.Rectangle import Rectangle
 from engine.shapes.Shape import Shape
 from engine.shapes.ConvexPolygon import ConvexPolygon
-from utils import is_2d_array
+from engine.utils import is_2d_array
 
 
 class Circle(Shape):
