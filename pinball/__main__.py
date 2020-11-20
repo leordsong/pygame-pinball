@@ -77,7 +77,7 @@ class PinballGame(Game):
                                     flipper_material, 'LeftFlipper')
         self.right_flipper = Flipper(np.array([self.width - 90, self.height - 55]),
                                      np.array([self.width - 140, self.height - 25]), math.pi / 4,
-                                     flipper_material, 'RightFlipper', left=False)
+                                     flipper_material, 'RightFlipper')
 
     def handle_actions(self):
         for event in pygame.event.get():
@@ -102,20 +102,25 @@ class PinballGame(Game):
                 if event.key == K_m:
                     self.right_flipper.rotate(False)
 
+            if event.type == pygame.MOUSEBUTTONUP:
+                pos = pygame.mouse.get_pos()
+                self.ball.transform.position = np.array([pos[0], pos[1]])
+
     def step(self, delta_time):
         if self.game_over:
             self.last_game_over = True
         self.ball.update(delta_time)
+        self.left_flipper.update(delta_time)
+        self.right_flipper.update(delta_time)
 
-        static_group = [self.left_flipper, self.right_flipper, self.valve] + self.walls + self.bumpers
+        static_group = self.walls + self.bumpers + [self.valve, self.left_flipper, self.right_flipper]
         # Check contacts
         contacts = get_contacts(self.ball, static_group)
         if len(contacts) > 0:
             self.ball.revert()
         for contact in contacts:
+            print(contact.body_b.name)
             contact.resolve(delta_time)
-        if len(contacts) > 0:
-            self.ball.update(delta_time / 2)
 
         if self.ball.transform.position[1] >= self.height:
             self.game_over = True
@@ -139,6 +144,8 @@ class PinballGame(Game):
 
         score_text = self.text_font.render(str(int(self.score)), True, THECOLORS['black'])
         self.screen.blit(score_text, (15, 10))
+        fps_text = self.text_font.render(str(int(self.clock.get_fps())), True, THECOLORS['white'])
+        self.screen.blit(fps_text, (self.width - 20, 10))
         if self.game_over:
             game_over_text = self.text_font2.render("Game Over", True, THECOLORS['black'])
             self.screen.blit(game_over_text, (self.width / 2 - 60, self.height / 2))

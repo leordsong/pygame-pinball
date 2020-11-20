@@ -6,80 +6,76 @@ import pygame
 from engine.shapes import Circle, ConvexPolygon
 from engine import Transform, Material
 from engine.Entity import Entity
-from utils import is_2d_array
 
 
 class Flipper(Entity):
 
-    def __init__(self, center: np.ndarray, head: np.ndarray, angle: float, material: Material, name="Flipper",
-                 center_r: float = 12.0, head_r: float = 7.0, left=True):
-        super().__init__(Circle(center_r, Transform(center)), material, 100, name=name)
+    def __init__(self, center: np.ndarray, head_pos: np.ndarray, angle: float, material: Material, name="Flipper",
+                 center_r: float = 12.0, head_r: float = 7.0):
         assert type(angle) is float
-        is_2d_array(head)
-        rotated_head = self._rotate(center, head, angle)
-        self.original_head = Circle(head_r, Transform(head))
-        self.rotated_head = Circle(head_r, Transform(rotated_head))
 
-        original_points = self._calculate_points(center, center_r, head, head_r)
-        rotated_points = self._calculate_points(center, center_r, rotated_head, head_r)
-        self.original_body = ConvexPolygon(original_points, Transform(center))
-        self.rotated_body = ConvexPolygon(rotated_points, Transform(center))
+        self.head = Circle(head_r, Transform(head_pos))
+        self.body = ConvexPolygon(self._calculate_points(center, center_r, head_pos, head_r), Transform(center))
+        self.tail = Circle(center_r, Transform(center))
+        super().__init__(self.tail, material, 100, name=name)
 
-        points = np.array([rotated_points[0], original_points[1], rotated_points[2], original_points[3]]) if left \
-            else np.array([original_points[0], rotated_points[1], original_points[2], rotated_points[3]])
-        self.whole_body = ConvexPolygon(points, Transform(center))
-
+        self.angle = angle
+        self.center = center
+        self.head_position = head_pos
         self.state = False
-        self.prev_state = 0
+        self.prev_time = 0
+        self.step = 0
+        self.max_step = 20
 
     def rotate(self, active: bool):
-        if not self.state:
-            self.prev_state = pygame.time.get_ticks()
+        if active != self.state:
+            self.prev_time = pygame.time.get_ticks()
         self.state = active
 
     def reset(self):
-        self.rotate(False)
-
-    def is_active(self):
-        active = pygame.time.get_ticks() - self.prev_state < 200
-        if active:
-            self.material.restitution = 1.5
-        else:
-            self.material.restitution = 0.9
+        self.step = 0
+        self.state = False
+        self.prev_time = 0
 
     def collide_ball(self, ball) -> bool:
-        if self.is_active():
-            return ball.shape.collide(self.whole_body) or ball.shape.collide(self.rotated_head) \
-                   or ball.shape.collide(self.shape)
-        elif self.state:
-                return ball.shape.collide(self.rotated_body) or ball.shape.collide(self.rotated_head) \
-                       or ball.shape.collide(self.shape)
-        else:
-            return ball.shape.collide(self.original_body) or ball.shape.collide(self.original_head) \
-                   or ball.shape.collide(self.shape)
+        if ball.shape.collide(self.head):
+            self.shape = self.head
+            self.material.restitution = 1.5 if self.state else 0.9
+            return True
+        elif ball.shape.collide(self.body):
+            self.shape = self.body
+            self.material.restitution = 1.2 if self.state else 0.9
+            return True
+        elif ball.shape.collide(self.tail):
+            self.shape = self.tail
+            self.material.restitution = 0.9
+            return True
+        return False
 
-    def get_contact_normal_ball(self, ball) -> bool:
-        if self.is_active():
-            if ball.shape.collide(self.rotated_head):
-                return ball.shape.get_normal(self.rotated_head)
-            if ball.shape.collide(self.shape):
-                return ball.shape.get_normal(self.shape)
-            elif ball.shape.collide(self.whole_body):
-                return ball.shape.get_normal(self.whole_body)
-        elif self.state:
-            if ball.shape.collide(self.rotated_head):
-                return ball.shape.get_normal(self.rotated_head)
-            if ball.shape.collide(self.shape):
-                return ball.shape.get_normal(self.shape)
-            elif ball.shape.collide(self.whole_body):
-                return ball.shape.get_normal(self.rotated_body)
+    def update(self, delta_time: float):
+        if self.state:
+            if self.step == self.max_step:
+                return
+            delta_time = pygame.time.get_ticks() - self.prev_time
+            steps = int(delta_time / 10)
+            self.step = self.step + steps
+            if self.step > self.max_step:
+                self.step = self.max_step
         else:
-            if ball.shape.collide(self.original_head):
-                return ball.shape.get_normal(self.rotated_head)
-            if ball.shape.collide(self.shape):
-                return ball.shape.get_normal(self.shape)
-            elif ball.shape.collide(self.original_body):
-                return ball.shape.get_normal(self.rotated_body)
+            if self.prev_time <= 0 or self.step == 0:
+                return
+            delta_time = pygame.time.get_ticks() - self.prev_time
+            steps = int(delta_time / 10)
+            self.step = self.step - steps
+            if self.step < 0:
+                self.step = 0
+
+        angle = self.angle * self.step / self.max_step
+        head_position = self.head_position if angle == 0 else self._rotate(self.center, self.head_position, angle)
+        self.head.transform.update(head_position)
+        points = self._calculate_points(self.center, self.tail.r, head_position, self.head.r)
+        self.body.points = points
+
 
     @staticmethod
     def _calculate_points(center, center_r, head, head_r):
@@ -106,10 +102,6 @@ class Flipper(Entity):
         return origin + np.array([qx, qy])
 
     def draw(self, screen):
-        if self.state:
-            self.rotated_head.render(screen, self.material)
-            self.rotated_body.render(screen, self.material)
-        else:
-            self.original_head.render(screen, self.material)
-            self.original_body.render(screen, self.material)
-        self.shape.render(screen, self.material)
+        self.head.render(screen, self.material)
+        self.body.render(screen, self.material)
+        self.tail.render(screen, self.material)

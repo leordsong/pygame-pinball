@@ -22,11 +22,6 @@ class Ball(Entity):
             return entity.collide_ball(self)
         return super(Ball, self).collide(entity)
 
-    def get_contact_normal(self, entity: Entity):
-        if isinstance(entity, Flipper):
-            return entity.get_contact_normal_ball(self)
-        return super(Ball, self).get_contact_normal(entity)
-
     def reset(self):
         is_2d_array(self.original_position)
         self.transform.position = self.original_position

@@ -52,6 +52,8 @@ class Entity(pygame.sprite.Sprite):
 
     def revert(self):
         self.velocity = self._prev_velocity
+        self.transform.revert()
+        self.shape.update()
 
     def reset(self):
         pass

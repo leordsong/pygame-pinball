@@ -59,9 +59,15 @@ class RLPinballGame(PinballGame):
         return self.display
 
     def render(self):
-        super().render()
-        fps_text = self.text_font.render(str(int(self.clock.get_fps())), True, THECOLORS['white'])
-        self.screen.blit(fps_text, (self.width - 20, 10))
+        self.screen.fill(self.background)
+        self.ball.draw(self.screen)
+        self.valve.draw(self.screen)
+        for w in self.walls:
+            w.draw(self.screen)
+        for w in self.bumpers:
+            w.draw(self.screen)
+        self.left_flipper.draw(self.screen)
+        self.right_flipper.draw(self.screen)
 
     def reset(self):
         super().reset()

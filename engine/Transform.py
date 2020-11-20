@@ -18,3 +18,6 @@ class Transform:
         self._prev_position = self.position
         self.position = position
 
+    def revert(self):
+        self.position = self._prev_position
+
