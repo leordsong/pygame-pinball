@@ -1,5 +1,6 @@
 import random
 import collections
+from os.path import join, isfile
 
 import numpy as np
 from tensorflow.keras.models import Sequential
@@ -9,8 +10,9 @@ from tensorflow.keras.optimizers import Adam
 
 class DQNAgent:
 
-    def __init__(self):
+    def __init__(self, name):
         self.model = None
+        self.name = name
         self.reward = 0
         self.learning_rate = 0.0005
         self.max_steps = 60 * 60 * 5  # play at least 5 minutes for each episode
@@ -28,7 +30,7 @@ class DQNAgent:
         self.short_memory = collections.deque(maxlen=4)
         self.memory = collections.deque(maxlen=2500)
 
-    def network(self, width, height, action_size):
+    def network(self, width, height, action_size, weight_path=None):
         model = Sequential()
         model.add(Conv2D(16, 8, strides=[8, 8], activation='relu', input_shape=(width, height, 3)))
         model.add(Conv2D(16, 4, strides=[4, 4], activation='relu'))
@@ -39,6 +41,17 @@ class DQNAgent:
         opt = Adam(self.learning_rate)
         model.compile(loss='mse', optimizer=opt)
         self.model = model
+
+        if weight_path is not None:
+            index_file = join(weight_path, self.name + ".index")
+            if isfile(index_file):
+                weights_path = join(weight_path, self.name)
+                self.model.load_weights(weights_path)
+
+    def save_weights(self, weight_path):
+        if weight_path is not None:
+            weights_path = join(weight_path, self.name)
+            self.model.save_weights(weights_path)
 
     def adjust_epsilon(self, step):
         self.epsilon = self.explore_stop + (self.explore_start - self.explore_stop) * np.exp(-self.decay_rate * step)
@@ -76,10 +89,11 @@ class DQNAgent:
             self.model.fit(state_array, target_f, epochs=1, verbose=0)
 
     def train_short_memory(self, state, action, reward, next_state, done):
+        next_state_array = np.array([next_state])
+        state_array = np.array([state])
         target = reward
-        train_state = np.array([next_state]).reshape([1, 300, 500, 1])
-        # if not done:
-        #     target = reward + self.gamma * np.amax(self.model.predict(train_state)[0])
-        target_f = self.model.predict(train_state)
-        target_f[0][np.argmax(action)] = target
-        self.model.fit(train_state, target_f, epochs=1, verbose=0)
+        if not done:
+            target = reward + self.gamma * np.amax(self.model.predict(next_state_array)[0])
+        target_f = self.model.predict(state_array)
+        target_f[0][action] = target
+        self.model.fit(state_array, target_f, epochs=1, verbose=0)

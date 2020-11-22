@@ -37,7 +37,7 @@ class PinballGame(Game):
         self.text_font = pygame.font.Font('freesansbold.ttf', 13)
         self.text_font2 = pygame.font.Font('freesansbold.ttf', 20)
 
-        self.ball = Ball(np.array([280, 450]), 14.0, Material(THECOLORS['green']))
+        self.ball = Ball(np.array([280, 454]), 10.0, Material(THECOLORS['green']))
 
         wall_material = Material(THECOLORS['black'])
         wall_width = 5.0
@@ -46,9 +46,10 @@ class PinballGame(Game):
             Wall(np.array([0, 0]), wall_width, float(self.height), wall_material, "LeftWall"),
             Wall(np.array([self.width - wall_width, 0]), wall_width, float(self.height), wall_material, "RightWall"),
             Wall(np.array([self.width - 25.0, self.height - 35.0]), 10.0, 35.0, wall_material, "Plunger"),
-            Entity(ConvexPolygon(np.array([[self.width - 100, 0], [self.width, 0], [self.width, 50]]),
-                                 Transform(np.array([self.width, self.height]))),
-                   wall_material, 100, name="TopRight"),
+            Entity(ConvexPolygon(
+                np.array([[self.width - 40, 0], [self.width, 0], [self.width, 50], [self.width - 40, 20]]),
+                Transform(np.array([self.width, self.height]))),
+                wall_material, 100, name="TopRight"),
             Entity(ConvexPolygon(np.array([[5, self.height - 69], [5, self.height - 97],
                                            [57.91117863822124, 434.5569177391425],
                                            [46.08882136177876, 455.4430822608575]]),
@@ -66,16 +67,22 @@ class PinballGame(Game):
                            "MiddleWall")
 
         bumper_material = Material(THECOLORS['red'], restitution=1.2)
-        p = np.array([60, 80])
+        p = np.array([60, 100])
+        p2 = np.array([200, 150])
         w = np.array([15, 0])
         h = np.array([0, 30])
         self.bumpers = [
-            Bumper(ConvexPolygon(np.array([p-w, p+h, p+w, p-h]), Transform(p)), material=bumper_material, name="Bumper1"),
-            Bumper(Circle(10.0, Transform(np.array(np.array([105, 345])))), material=bumper_material, name="Bumper2"),
-            Bumper(Circle(20.0, Transform(np.array(np.array([165, 200])))), material=bumper_material, name="Bumper3"),
+            Bumper(ConvexPolygon(np.array([p - w, p + h, p + w, p - h]), Transform(p)), material=bumper_material,
+                   name="Bumper1", points=20),
+            Bumper(ConvexPolygon(np.array([p2 - w, p2 + h, p2 + w, p2 - h]), Transform(p)), material=bumper_material,
+                   name="Bumper2", points=20),
+            # Bumper(Circle(10.0, Transform(np.array(np.array([70, 320])))), material=bumper_material, name="Bumper3"),
+            # Bumper(Circle(10.0, Transform(np.array(np.array([190, 320])))), material=bumper_material, name="Bumper4"),
+            Bumper(Circle(20.0, Transform((p + p2) / 2 + 3 * h)), material=bumper_material, name="Bumper5",
+                   points=5),
         ]
 
-        flipper_material = Material(THECOLORS['red'])
+        flipper_material = Material(THECOLORS['red'], restitution=0.7)
         self.left_flipper = Flipper(np.array([52, self.height - 55]), np.array([102, self.height - 25]), -math.pi / 4,
                                     flipper_material, 'LeftFlipper')
         self.right_flipper = Flipper(np.array([self.width - 90, self.height - 55]),
@@ -124,7 +131,7 @@ class PinballGame(Game):
         for contact in contacts:
             contact.resolve(delta_time)
 
-        if self.ball.transform.position[1] >= self.height:
+        if np.isnan(self.ball.transform.position)[1] or self.ball.transform.position[1] >= self.height:
             self.game_over = True
         if not self.launched and self.ball.transform.position[0] <= (self.width - 40 - self.ball.shape.r):
             self.launched = True

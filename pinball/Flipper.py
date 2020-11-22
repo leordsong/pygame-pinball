@@ -48,7 +48,7 @@ class Flipper(Entity):
             return True
         elif ball.shape.collide(self.tail):
             self.shape = self.tail
-            self.material.restitution = 0.9
+            self.material.restitution = 0.7
             return True
         return False
 

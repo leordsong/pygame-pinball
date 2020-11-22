@@ -15,7 +15,7 @@ class Ball(Entity):
     def launch(self):
         if np.array_equal(self.transform.position, self.original_position):
             self.velocity = self.velocity + np.array([0, -400])
-            self.force = np.array([0, 40])
+            self.force = np.array([0, 80])
 
     def collide(self, entity) -> bool:
         if isinstance(entity, Flipper):
