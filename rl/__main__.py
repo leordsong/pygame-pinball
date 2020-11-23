@@ -17,7 +17,7 @@ class RLPinballGame(PinballGame):
     counters = 0
     frames = 0
     batch_size = 500
-    skip = 10
+    skip = 21
     train = False
     last_state = None
     data = pd.DataFrame(columns=['episode', 'score'])
@@ -44,7 +44,7 @@ class RLPinballGame(PinballGame):
         if self.is_game_over():
             self.reset()
 
-        if self.frames == 50:
+        if self.frames == 21:
             self.ball.launch()
         if self.frames < self.skip:
             self.action = 0
@@ -59,7 +59,7 @@ class RLPinballGame(PinballGame):
 
     def make_action(self):
         self.agent.adjust_epsilon(self.counters)
-        if self.train and np.random.rand() < self.agent.epsilon:
+        if np.random.rand() < self.agent.epsilon:
             return randint(0, 2)
         else:
             prediction = self.agent.predict(self.last_state)
@@ -99,8 +99,8 @@ class RLPinballGame(PinballGame):
             state = None
             if self.frames >= self.skip and self.train:
                 state = self.get_grey_screen()
-                # self.agent.train_short_memory(self.last_state, self.action, self.score, state, self.is_game_over())
-                self.agent.remember(self.last_state, self.action, self.agent.reward, state, self.is_game_over())
+                if self.frames % 10 == 0:
+                    self.agent.remember(self.last_state, self.action, self.agent.reward, state, self.is_game_over())
                 self.last_state = state
             self.last_state = self.get_grey_screen() if state is None else state
 
@@ -110,11 +110,11 @@ class RLPinballGame(PinballGame):
             if self.is_game_over():
                 print("Episode: ", self.counters)
                 self.agent.train(self.agent.memory, self.batch_size)
-                self.data.append({'episode': self.counters, 'score': self.score}, ignore_index=True)
+                self.data = self.data.append({'episode': self.counters, 'score': self.score}, ignore_index=True)
             self.tick()
 
 
 if __name__ == '__main__':
     agent1 = DQNAgent("dqn")
-    game = RLPinballGame(agent1, False, True, 20, 100, './weights')
+    game = RLPinballGame(agent1, True, True, 20, 500, './weights')
     game.run()

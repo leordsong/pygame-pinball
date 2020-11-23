@@ -3,7 +3,7 @@
 ## Setup
 ```shell script
 conda create -n pygame python=3.7 tensorflow-gpu
-pip install pygame pandas
+pip install pygame pandas tqdm plotly
 ```
 
 ## How to run

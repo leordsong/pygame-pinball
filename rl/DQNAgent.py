@@ -6,6 +6,7 @@ import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, Flatten
 from tensorflow.keras.optimizers import Adam
+from tqdm import tqdm
 
 
 class DQNAgent:
@@ -28,7 +29,7 @@ class DQNAgent:
 
         # Memory hyperparameters
         self.short_memory = collections.deque(maxlen=4)
-        self.memory = collections.deque(maxlen=2500)
+        self.memory = collections.deque(maxlen=10000)
 
     def network(self, width, height, action_size, weight_path=None):
         model = Sequential()
@@ -78,15 +79,8 @@ class DQNAgent:
         else:
             minibatch = memory
 
-        for state, action, reward, next_state, done in minibatch:
-            next_state_array = np.array([next_state])
-            state_array = np.array([state])
-            target = reward
-            if not done:
-                target = reward + self.gamma * np.amax(self.model.predict(next_state_array)[0])
-            target_f = self.model.predict(state_array)
-            target_f[0][action] = target
-            self.model.fit(state_array, target_f, epochs=1, verbose=0)
+        for state, action, reward, next_state, done in tqdm(minibatch):
+            self.train_short_memory(state, action, reward, next_state, done)
 
     def train_short_memory(self, state, action, reward, next_state, done):
         next_state_array = np.array([next_state])
