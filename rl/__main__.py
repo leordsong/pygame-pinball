@@ -101,6 +101,8 @@ class RLPinballGame(PinballGame):
                 state = self.get_grey_screen()
                 if self.frames % 10 == 0:
                     self.agent.remember(self.last_state, self.action, self.agent.reward, state, self.is_game_over())
+                    self.agent.train_short_memory(self.last_state, self.action, self.agent.reward, state,
+                                                  self.is_game_over())
                 self.last_state = state
             self.last_state = self.get_grey_screen() if state is None else state
 
